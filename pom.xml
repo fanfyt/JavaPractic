@@ -7,6 +7,10 @@
     <groupId>groupId</groupId>
     <artifactId>JavaPractic</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+    <!-- 我的是jdk13，所以设置13  jdk1.8的可以直接将其换成1.8 -->
 
-    
-</project>
+    </project>
