@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="blog_system-0.0.2-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/main/resources/blog_system-0.0.2-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
