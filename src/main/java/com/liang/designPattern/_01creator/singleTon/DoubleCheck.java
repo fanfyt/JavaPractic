@@ -1,4 +1,7 @@
 package com.liang.designPattern._01creator.singleTon;
+
+
+//(因为JVM本质重排序的原因，可能会初始化多次，不推荐使用)
 //双重检测锁模式
 public class DoubleCheck {
     public DoubleCheck() {
@@ -13,7 +16,6 @@ public class DoubleCheck {
                 doubleCheck = new DoubleCheck();
             }
         }
-
         return doubleCheck;
     }
 

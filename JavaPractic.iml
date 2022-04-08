@@ -21,5 +21,8 @@
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.junit.jupiter:junit-jupiter-engine:5.8.2" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.junit.platform:junit-platform-engine:1.8.2" level="project" />
     <orderEntry type="library" name="blog_system-0.0.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="blog_system-0.0.2-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="blog_system-0.0.3-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="blog_system-0.0.3-SNAPSHOT (2)" level="project" />
   </component>
 </module>
