@@ -2,13 +2,13 @@ package com.liang.designPattern._01creator.singleTon;
 
 //饿汉式:类初始化时,会立即加载该对象，线程天生安全,调用效率高。
 
-import jdk.swing.interop.SwingInterOpUtils;
 
 public class Ehanshi {
 
-    //直接初始化一个静态私有类对象
+    //直接 new 一个静态私有类对象
     private static Ehanshi 饿汉= new Ehanshi();
 
+    //构造方法
     public Ehanshi() {
     }
 

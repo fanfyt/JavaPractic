@@ -2,8 +2,6 @@ package com.liang.designPattern._01creator.singleTon;
 
 //利用枚举类实现，枚举类型本身就是单例的
 public enum EnumTypeClass {
-
-
     E;
     String s(){
         String a ="123";
