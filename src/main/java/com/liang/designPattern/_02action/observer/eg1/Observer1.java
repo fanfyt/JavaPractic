@@ -2,13 +2,12 @@ package com.liang.designPattern._02action.observer.eg1;
 
 import javax.security.auth.Subject;
 import java.util.Observable;
-import java.util.Observer;
 
 public class Observer1 implements MyAbstractObserver {
 
-    private final SubjectInter subject;
+    private SubjectInter subject = new SubjectInter();
 
-    public Observer1(SubjectInter subject) {
+    public Observer1() {
         this.subject = subject;
 
     }

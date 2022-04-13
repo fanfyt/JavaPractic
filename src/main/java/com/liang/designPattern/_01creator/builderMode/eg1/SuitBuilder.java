@@ -1,5 +1,6 @@
 package com.liang.designPattern._01creator.builderMode.eg1;
 
+//builder实现类
 public class SuitBuilder implements BuildInterface{
 
     private SuitPo suit = new SuitPo();

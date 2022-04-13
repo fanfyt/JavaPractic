@@ -1,5 +1,5 @@
 package com.liang.designPattern._01creator.builderMode.eg1;
-
+// 要制造的产品
 public class SuitPo {
     private String Coat;
     private String plant;
