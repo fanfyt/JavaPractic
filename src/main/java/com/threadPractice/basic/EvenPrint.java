@@ -11,8 +11,6 @@ public class EvenPrint implements Runnable  {
         Thread t2 = new Thread( evenPrint);
         t2.start();
         t1.start();
-//        new Thread(evenPrint).start();
-//        new Thread(evenPrint).start();
 
     }
 
