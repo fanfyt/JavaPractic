@@ -1,6 +1,5 @@
 package com.threadPractice.basic;
 
-import java.util.concurrent.Callable;
 
 //实现两个线程交替执行，使用Object的wait/notify方法
 public class EvenPrint implements Runnable  {
