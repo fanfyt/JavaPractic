@@ -1,4 +1,4 @@
-package com.calculate.basic;
+package com.calculate.inner.basic;
 
 import java.util.LinkedList;
 import java.util.Objects;

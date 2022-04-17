@@ -2,14 +2,16 @@ package com.liang.designPattern._02action.observer.eg1.observersAndSubject;
 
 import java.util.ArrayList;
 import java.util.List;
-
 public class Subject {
-
+    //用于存放观察者的list
     private List<AbstractObserver> observers =  new ArrayList<>();
+    //属性状态
     private int state;
+    //获取状态方法
     public int getState(){
         return state;
     }
+    //修改属性状态方法
     public void setSelected(int state){
         this.state = state;
         notifyObservers(); //当改变state时候，通知所有观察者

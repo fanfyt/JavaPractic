@@ -1,16 +1,11 @@
 package com.calculate.inner.basic;
-
-import javax.print.StreamPrintService;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Stream;
-
 public class BubleSort {
 
     public static void main(String[] args) {
-        Integer[] array ={3,2,4,3,8,1};
+        int[] array ={3,2,4,3,8,1};
+        int[] array2 ={3,2,4,3,8,1};
 
         for (int i = 0; i < array.length; i++) {
             int mid =0;
@@ -23,8 +18,10 @@ public class BubleSort {
             }
         }
         Iterator<Integer> iterator = Arrays.stream(array).iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             System.out.println(iterator.next());
         }
+        Arrays.stream(array2).sorted().forEach(System.out::println);
+
     }
 }

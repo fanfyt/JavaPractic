@@ -7,6 +7,7 @@ import com.liang.designPattern._02action.observer.eg1.observersAndSubject.Subjec
 
 public class TestObserver {
     public static void main(String[] args) {
+        //new一个悲观者对象
         Subject subject = new Subject();
         //在new一个观察者的时候，传入一个subject对象
         Observer_1 observer_1 = new Observer_1(subject);
@@ -14,8 +15,9 @@ public class TestObserver {
         new Observer_3(subject);
 
         System.out.println("现在设置state为5");
-        subject.setSelected(5);
+        subject.setSelected(5);//修改被观察者属性
 
+        //观察者调用刷新方法，观察被观察者的变化情况
         observer_1.update();
 
     }

@@ -3,6 +3,8 @@ package com.liang.designPattern._02action.observer.eg1.observersAndSubject.obser
 import com.liang.designPattern._02action.observer.eg1.observersAndSubject.AbstractObserver;
 import com.liang.designPattern._02action.observer.eg1.observersAndSubject.Subject;
 
+import java.util.Observer;
+
 public class Observer_1 extends AbstractObserver {
     public Observer_1(Subject subject) {
         this.subject = subject;
