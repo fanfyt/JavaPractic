@@ -1,5 +1,7 @@
 package com.liang.leecode._2两数相加;
 
+import org.junit.jupiter.api.Test;
+
 /*
 给你两个非空 的链表，表示两个非负的整数。
 它们每位数字都是按照逆序的方式存储的，并且每个节点只能存储一位数字。
@@ -20,10 +22,10 @@ public class Answer1 {
         int[] input2 = {1, 1};
         int l1Length = input1.length;
         int l2Length = input2.length;
-        while (l1Length >0) {
+        while (l1Length > 0) {
             l1.val = input1[l1Length - 1];
             l1Length--;
-            if(l1Length>0){
+            if (l1Length > 0) {
                 l1 = new ListNode(0, l1);
             }
         }
@@ -38,15 +40,15 @@ public class Answer1 {
         }
 
         testListNodeData(l1, l2);
-        ListNode result = solution(l1,l2);
-        while(result!=null){
+        ListNode result = solution(l1, l2);
+        while (result != null) {
             System.out.print(result.val);
             result = result.next;
         }
     }
 
     public static ListNode solution(ListNode l1, ListNode l2) {
-        ListNode l3 ;
+        ListNode l3;
         ListNode temp = new ListNode();
         int rest = 0;   //进位的数字
         int sum = 0;    //两数之和
@@ -70,7 +72,7 @@ public class Answer1 {
             add = sum % 10;
             rest = sum / 10;
 
-           //这时处理数字和,给结果给l3的结点赋值
+            //这时处理数字和,给结果给l3的结点赋值
 
 
             l1 = l1.next;
@@ -78,9 +80,9 @@ public class Answer1 {
 
             //temp给新结点赋值，把之前的结点放入next结点
 
-            if(null!=l1.next||null!=l2.next){
-                temp = new ListNode(add,temp);
-            }else{
+            if (null != l1.next || null != l2.next) {
+                temp = new ListNode(add, temp);
+            } else {
                 temp = new ListNode(add);
             }
             System.out.println();
@@ -92,19 +94,78 @@ public class Answer1 {
 
     //测试生成链表是否成功
     public static void testListNodeData(ListNode l1, ListNode l2) {
-        ListNode l3 = new ListNode();
-        System.out.println();
-        System.out.print("l1 = ");
-        while (l1 != null) {
-            System.out.print(l1.val);
-            l1 = l1.next;
-        }
-        System.out.println();
-        System.out.print("l2 = ");
-        while (l2 != null) {
-            System.out.print(l2.val);
-            l2 = l2.next;
+
+    }
+
+
+    @Test
+    public void test() {
+
+        int a[] = {1, 3, 4};
+        int b[] = {1, 2};
+        ListNode listNode1 = ListNodeGenerator.getListNode(a);
+        System.out.println("  ---   ");
+        ListNode listNode2 = ListNodeGenerator.getListNode(b);
+
+        ListNode listNode = resolveIt(listNode1, listNode2);
+
+        System.out.println(" 結果 ：");
+        while (listNode != null) {
+            System.out.println(listNode.val);
+
+            if (listNode.next != null) {
+                listNode = listNode.next;
+            } else {
+                break;
+            }
+
         }
     }
+
+    private ListNode resolveIt(ListNode l1, ListNode l2) {
+        ListNode l3 = new ListNode();
+        int sum = 0;
+        int over = 0;
+        int add = 0;
+        while (l1 != null || l2 != null) {
+
+            boolean l1Null = (l1 == null);
+            boolean l2Null = (l2 == null);
+
+            if (l1Null) {
+                // l2.next 不为null
+                sum = l2.val + over;
+                over = sum / 10;
+                add = sum % 10;
+                l2 = l2.next;
+                l3.val = add;
+            } else if (l2Null) {
+                // l1.next 不为null
+                sum = l1.val + over;
+                over = sum / 10;
+                add = sum % 10;
+                l1 = l1.next;
+                l3.val = add;
+            } else {
+                // l1、l2 next都不为null
+                sum = l1.val + l2.val + over;
+                over = sum / 10;
+                add = sum % 10;
+
+                l1 = l1.next;
+                l2 = l2.next;
+                l3.val = add;
+            }
+
+            if (l1 == null && l2 == null) {
+                break;
+            } else {
+                l3 = new ListNode(0, l3);
+            }
+
+        }
+        return l3;
+    }
+
 
 }
