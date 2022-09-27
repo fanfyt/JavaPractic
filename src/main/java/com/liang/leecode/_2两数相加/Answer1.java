@@ -2,15 +2,16 @@ package com.liang.leecode._2两数相加;
 
 import org.junit.jupiter.api.Test;
 
-/*
+/**
 给你两个非空 的链表，表示两个非负的整数。
 它们每位数字都是按照逆序的方式存储的，并且每个节点只能存储一位数字。
 
 请你将两个数相加，并以相同形式返回一个表示和的链表。
 你可以假设除了数字 0 之外，这两个数都不会以 0开头。
-
+<p/>
 来源：力扣（LeetCode）
-链接：https://leetcode-cn.com/problems/add-two-numbers
+ <p/>
+ 链接：https://leetcode-cn.com/problems/add-two-numbers
 著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
 * */
 public class Answer1 {
@@ -51,7 +52,7 @@ public class Answer1 {
         ListNode l3;
         ListNode temp = new ListNode();
         int rest = 0;   //进位的数字
-        int sum = 0;    //两数之和
+        int sum;    //两数之和
         int add = 0;    //最终获得两数之和需要保存的数（个位数）
 
         //如果l1或者l2不为空就进入循环
@@ -75,8 +76,8 @@ public class Answer1 {
             //这时处理数字和,给结果给l3的结点赋值
 
 
-            l1 = l1.next;
-            l2 = l2.next;
+            l1 = l1 != null ? l1.next : null;
+            l2 = l2 != null ? l2.next : null;
 
             //temp给新结点赋值，把之前的结点放入next结点
 
@@ -97,15 +98,19 @@ public class Answer1 {
 
     }
 
-
+    //[9,9,9,9,9,9,9]
+//[9,9,9,9]
     @Test
     public void test() {
 
         int a[] = {1, 3, 4};
         int b[] = {1, 2};
-        ListNode listNode1 = ListNodeGenerator.getListNode(a);
+
+        int[] wrong1 = {9};
+        int[] wrong2 = {9};
+        ListNode listNode1 = ListNodeGenerator.getListNode(wrong1);
         System.out.println("  ---   ");
-        ListNode listNode2 = ListNodeGenerator.getListNode(b);
+        ListNode listNode2 = ListNodeGenerator.getListNode(wrong2);
 
         ListNode listNode = resolveIt(listNode1, listNode2);
 
@@ -157,9 +162,19 @@ public class Answer1 {
                 l3.val = add;
             }
 
-            if (l1 == null && l2 == null) {
+//            if (l1 == null && l2 == null) {
+//                break;
+//            } else if (l1 == null && l2 == null && over > 0) {
+//                l3 = new ListNode(over, l3);
+//            } else {
+//                l3 = new ListNode(0, l3);
+//            }
+
+            if(l1 == null && l2 == null && over >0){
+                l3 = new ListNode(over, l3);
+            }else if(l1 == null && l2 == null){
                 break;
-            } else {
+            }else {
                 l3 = new ListNode(0, l3);
             }
 

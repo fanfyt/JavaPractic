@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="edc-3.4.2-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/lib/edc-3.4.2-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

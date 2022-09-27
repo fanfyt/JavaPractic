@@ -1,71 +1,93 @@
 package com.liang.leecode._2两数相加;
 
+import org.junit.jupiter.api.Test;
+
 public class Answer2 {
 
-    public static void main(String[] args) {
-        int[] a = {1, 2, 3, 4};
-        int[] b = {1, 2, 3};
-        ListNode l1 = new ListNode();
-        ListNode l2 = new ListNode();
 
-        l1 = fillListNode(l1, a);
-        l2 = fillListNode(l2, b);
-        while (l1 != null) {
-            System.out.println(l1.val);
-            l1 = l1.next;
-        }
-        System.out.println();
-        while (l2 != null) {
-            System.out.println(l2.val);
-            l2 = l2.next;
+    @Test
+    public void test() {
+
+        int a[] = {1, 3, 4};
+        int b[] = {1, 2};
+        ListNode listNode1 = ListNodeGenerator.getListNode(a);
+        System.out.println("  ---   ");
+        ListNode listNode2 = ListNodeGenerator.getListNode(b);
+
+        ListNode listNode = resolveIt(listNode1, listNode2);
+
+        System.out.println(" 結果 ：");
+        while (listNode != null) {
+            System.out.println(listNode.val);
+
+            if (listNode.next != null) {
+                listNode = listNode.next;
+            } else {
+                break;
+            }
+
         }
     }
 
-
-
-    public ListNode testAddTwoNumbers(ListNode l1,ListNode l2){
+    private ListNode resolveIt(ListNode l1, ListNode l2) {
         ListNode l3 = new ListNode();
-        int add = 0;
-        int r = 0;
         int sum = 0;
-        //当l1或者l2其中一个不为null就进入循环
-        while(l1!=null||l2!=null){
+        int over = 0;
+        int add = 0;
+        while (l1 != null || l2 != null) {
 
+            boolean l1Null = (l1 == null);
+            boolean l2Null = (l2 == null);
 
-            sum =  l1.val + l2.val + r; //第一个加+第二个+进位数字 = 本次相加的结果sum
+            if (l1Null) {
+                // l2.next 不为null
+                sum = l2.val + over;
+                over = sum / 10;
+                add = sum % 10;
+                l2 = l2.next;
+                l3.val = add;
+            } else if (l2Null) {
+                // l1.next 不为null
+                sum = l1.val + over;
+                over = sum / 10;
+                add = sum % 10;
+                l1 = l1.next;
+                l3.val = add;
+            } else {
+                // l1、l2 next都不为null
+                sum = l1.val + l2.val + over;
+                over = sum / 10;
+                add = sum % 10;
 
+                l1 = l1.next;
+                l2 = l2.next;
+                l3.val = add;
+            }
 
-            r = (sum>10 ? sum%10 : 0); //sum大于10，就对10求整，否则进位为0
-
-
+            if (l1 == null && l2 == null) {
+                break;
+            } else {
+                l3 = new ListNode(0, l3);
+            }
 
         }
 
+        ListNode r = null;
+        while (l3 != null) {
+            if (r == null) {
+                r = new ListNode(l3.val);
+            } else {
+                r = new ListNode(l3.val, r);
+            }
+            if (l3.next != null) {
+                l3 = l3.next;
+            } else {
+                break;
+            }
+        }
 
-
-        return l3;
+        return r;
     }
 
-
-
-
-
-
-
-    //填充构建ListNode
-    private static ListNode fillListNode(ListNode l1, int[] a) {
-        int l = a.length;
-        if (l > 0) {
-            l1 = new ListNode(a[l - 1]);
-            l = l - 1;
-        }
-
-        while (l > 0) {
-            l--;
-            l1 = new ListNode(a[l], l1);
-        }
-
-        return l1;
-    }
 
 }
