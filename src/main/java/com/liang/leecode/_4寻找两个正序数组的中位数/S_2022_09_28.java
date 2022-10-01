@@ -1,7 +1,10 @@
 package com.liang.leecode._4寻找两个正序数组的中位数;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 1、分离
@@ -20,7 +23,7 @@ public class S_2022_09_28 {
     public static void main(String[] args) {
 
         int[] a = {1, 2};
-        int[] b = {3, 4, 5, 6, 7};
+        int[] b = {3, 5, 6};
         double medianSortedArrays = Solution.findMedianSortedArrays(a, b);
         System.out.println(medianSortedArrays);
     }
@@ -93,14 +96,18 @@ public class S_2022_09_28 {
                     }
                 }
             } else {
+                int i = 0;
                 int[] list = new int[l1 + l2];
-                System.arraycopy(nums1, 0, list, 0, nums1.length);
-                for (int j : nums2) {
-                    list[l1] = j;
+                for (; i < nums1.length; i++) {
+                    list[i] = nums1[i];
                 }
+                for (int j = 0; j < nums2.length; j++) {
+                    list[i + j] = nums2[j];
+                }
+
                 Arrays.sort(list);
                 if (jishu) {
-                    return list[(int) ((size + 1) / 2)];
+                    return list[(int) (size / 2)];
                 } else {
                     int pos = (int) (size / 2);
                     return (double) (list[pos] + list[pos + 1]) / 2;
