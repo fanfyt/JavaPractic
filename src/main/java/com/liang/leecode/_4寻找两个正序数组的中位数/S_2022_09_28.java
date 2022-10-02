@@ -1,10 +1,7 @@
 package com.liang.leecode._4寻找两个正序数组的中位数;
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * 1、分离
@@ -22,8 +19,8 @@ public class S_2022_09_28 {
 
     public static void main(String[] args) {
 
-        int[] a = {1, 2};
-        int[] b = {3, 5, 6};
+        int[] a = {0,0};
+        int[] b = {0,0};
         double medianSortedArrays = Solution.findMedianSortedArrays(a, b);
         System.out.println(medianSortedArrays);
     }
@@ -47,9 +44,9 @@ public class S_2022_09_28 {
                 double b1 = nums2[0];
                 double b2 = nums2[nums2.length - 1];
 
-                int target = ((size) / 2 + 1); // 奇数时候的中间数
-                double targetA = (size / 2);// 偶数时候的第一个中间数;
-                double targetB = (targetA + 1);// 偶数时候的第二个中间数;
+                int target = ((size) / 2 + 1); // 奇数时候的中间数位置
+                double targetA = (size / 2);// 偶数时候的第一个中间数位置;
+                double targetB = (targetA + 1);// 偶数时候的第二个中间数位置;
 
                 // 判断数组关系
                 int type = judgeType(a1, a2, b1, b2);
@@ -293,11 +290,11 @@ public class S_2022_09_28 {
             {
                 // l1(l2)
                 if (a1 <= b1 && b2 <= a2) {
-                    result = 31;
+                    result = 3;
                 }
                 //l2(l1)
                 else if (b1 <= a1 && a2 <= b2) {
-                    result = 32;
+                    result = 3;
                 }
             }
             return result;
