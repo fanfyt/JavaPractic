@@ -182,27 +182,27 @@ public class S_2022_09_28 {
          *
          * @param nums1   第一个数组
          * @param nums2   第二个数组
-         * @param second  第二个关键数
-         * @param thired  第三个关键数
+         * @param second  第二个关键数：第一个数组的最后一个数字
+         * @param third  第三个关键数：第二个数组的第一个数字
          * @param size    两个数组大小之和
-         * @param targetA 偶数求求中位数的第一个数字
-         * @param targetB 偶数求求中位数的第二个数字
+         * @param targetA 偶数求求中位数的第一个数字位置下标
+         * @param targetB 偶数求求中位数的第二个数字位置下标
          * @return double 中位数
          */
-        private static double caseB2(double second, double thired, double targetA, double targetB, int[] nums1, int[] nums2, int size) {
+        private static double caseB2(double second, double third, double targetA, double targetB, int[] nums1, int[] nums2, int size) {
 
             double c1 = 0;
             double c2 = 0;
             if (targetB < second) {
                 c1 = nums1[(int) targetA];
                 c2 = nums1[(int) targetB];
-            } else if (targetA >= thired) {
+            } else if (targetA >= third) {
                 c1 = nums2[(int) targetA];
                 c2 = nums2[(int) targetB];
             }
 
             // 中位数位于中间部分的情况
-            if (targetB >= second && targetB <= thired) {
+            if (targetB >= second && targetB <= third) {
                 int i = 0;
                 int j = 0;
                 for (; i < nums1.length; i++) {
@@ -213,7 +213,7 @@ public class S_2022_09_28 {
                 }
                 for (; j < nums2.length; j++) {
                     // 找到nums2 > nums1 末尾数组的长度
-                    if (nums2[j] > thired) {
+                    if (nums2[j] > third) {
                         break;
                     }
                 }
@@ -241,7 +241,7 @@ public class S_2022_09_28 {
                 c1 = mid[(int) targetA];
                 c2 = mid[(int) targetB];
 
-            } else if (targetA >= second && targetA <= thired) {
+            } else if (targetA >= second && targetA <= third) {
 
             }
 
