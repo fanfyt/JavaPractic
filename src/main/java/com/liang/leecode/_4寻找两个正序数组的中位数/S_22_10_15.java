@@ -25,14 +25,14 @@ public class S_22_10_15 {
         int l2 = nums2.length;
         int l3 = l1 + l2;
         int[] nums3 = new int[l3];
-        double result = 0;
+        double result;
         System.arraycopy(nums1, 0, nums3, 0, l1);
         System.arraycopy(nums2, 0, nums3, l1, l2);
 
         System.out.println(Arrays.toString(nums3));
         Arrays.sort(nums3);
         System.out.println(Arrays.toString(nums3));
-        int mid = 0;
+        int mid;
 
         // 奇数情况
         if ((l3 & 1) == 1) {
