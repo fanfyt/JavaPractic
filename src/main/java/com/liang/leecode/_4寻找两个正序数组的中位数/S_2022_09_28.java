@@ -19,8 +19,8 @@ public class S_2022_09_28 {
 
     public static void main(String[] args) {
 
-        int[] a = {0,0};
-        int[] b = {0,0};
+        int[] a = {0, 0};
+        int[] b = {0, 0};
         double medianSortedArrays = Solution.findMedianSortedArrays(a, b);
         System.out.println(medianSortedArrays);
     }
@@ -32,6 +32,24 @@ public class S_2022_09_28 {
             int size = l1 + l2;
             // 判断总长度是否为奇数
             boolean jishu = size % 2 != 0;
+
+            boolean f1 = true;
+            boolean f2 = true;
+            for (int i : nums1) {
+                if (i != 0) {
+                    f1 = false;
+                    break;
+                }
+            }
+            for (int i : nums2) {
+                if (i != 0) {
+                    f2 = false;
+                    break;
+                }
+            }
+            if (f1 && f2) {
+                return 0;
+            }
 
             //1. 两个数组都只有一个元素
             if (l1 == 1 && l2 == 1) {
@@ -183,7 +201,7 @@ public class S_2022_09_28 {
          * @param nums1   第一个数组
          * @param nums2   第二个数组
          * @param second  第二个关键数：第一个数组的最后一个数字
-         * @param third  第三个关键数：第二个数组的第一个数字
+         * @param third   第三个关键数：第二个数组的第一个数字
          * @param size    两个数组大小之和
          * @param targetA 偶数求求中位数的第一个数字位置下标
          * @param targetB 偶数求求中位数的第二个数字位置下标
