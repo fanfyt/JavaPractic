@@ -3,7 +3,7 @@ package com.liang.leecode._6N形变换;
 import org.junit.jupiter.api.Test;
 
 
-public class RunStr {
+public class TestN {
 
 
     @Test
