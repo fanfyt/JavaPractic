@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryJsonUtil {
     public static void main(String[] args) throws IOException {
@@ -26,9 +28,11 @@ public class QueryJsonUtil {
 //        System.out.println(resultJson);
         QueryJsonParam queryJson = new QueryJsonParam();
         HashMap<String, String> paramAnd = new HashMap<>();
-//        paramAnd.put("type", "+disease");
+        paramAnd.put("type", "+disease");
 //        paramAnd.put("name", "新冠肺炎");
         queryJson.setAnd(paramAnd);
+        queryJson.setCheckExist(false);
+//        queryJson.setCheckExist(true);
         ArrayList<String> targetList = new ArrayList<>();
 //        targetList.add("name");
 //        targetList.add("section_type");
@@ -58,26 +62,37 @@ public class QueryJsonUtil {
     public static Object queryJson(JSON data, QueryJsonParam params) {
         // 判断是否是检查存在性
         Boolean checkExist = params.getCheckExist();
+        Map<String, String> orMap = params.getOr();
+        Map<String, String> andMap = params.getAnd();
         List<Object> list = new ArrayList<>();
+        boolean found = false;
         // json数组
         if (data instanceof JSONArray) {
             JSONArray jsonArray = (JSONArray) data;
             for (Object obj : jsonArray) {
-                Object query = query(obj, params.getTarget());
+                Map<String, Object> query = query(obj, params.getTarget(), checkExist, orMap, andMap);
                 if (query == null) {
                     continue;
                 }
-                list.add(query(obj, params.getTarget()));
+                list.add(query(obj, params.getTarget(), checkExist, orMap, orMap));
+                if (checkExist) {
+                    break;
+                }
             }
         }
         // json对象
         if (data instanceof JSONObject) {
             JSONObject jsonObjData = (JSONObject) data;
-            Object query = query(jsonObjData, params.getTarget());
-            if (query == null) {
-                return list;
+            Object query = query(jsonObjData, params.getTarget(), checkExist, orMap, orMap);
+            if (query != null) {
+                list.add(query(jsonObjData, params.getTarget(), checkExist, orMap, orMap));
             }
-            list.add(query(jsonObjData, params.getTarget()));
+        }
+        if (checkExist) {
+            boolean exist = !list.isEmpty();
+            HashMap<String, Boolean> existOrNot = new HashMap<>();
+            existOrNot.put("exist", exist);
+            return existOrNot;
         }
         return list;
     }
@@ -88,12 +103,18 @@ public class QueryJsonUtil {
      *
      * @param obj           查询的obj对象
      * @param queryPathList 查询返回目标属性
+     * @param checkExist
+     * @param orMap         获取满足所有此条件的数据
+     * @param andMap        获取仅满足此条件的数据
      * @return Object
      */
-    public static Object query(@NonNull Object obj, @NonNull List<String> queryPathList) {
+    public static Map<String, Object> query(@NonNull Object obj, @NonNull List<String> queryPathList, @NonNull Boolean checkExist, Map<String, String> orMap, Map<String, String> andMap) {
         if (!(obj instanceof JSON)) {
             throw new RuntimeException("数据格式存在问题，无法转换为JSON格式");
         }
+        boolean nullOr = orMap == null;
+        boolean nullAnd = andMap == null;
+        boolean getAllData = (nullOr || orMap.isEmpty()) && (nullAnd || andMap.isEmpty());
         JSON jsonObjData = (JSON) obj;
         Map<String, Object> rMap = new HashMap<>();
         // 遍历每个属性的路径
@@ -101,11 +122,43 @@ public class QueryJsonUtil {
             // 将每个路径下的数据保存到map中
             String[] splitPath = pathStr.split("\\.");
             SignalData pathValue = getPathValue(jsonObjData, splitPath, 0);
-            if (pathValue.isResult) {
-                rMap.put(pathStr, pathValue.getData());
+            if (pathValue.isResult && pathValue.getData() != null) {
+                // 过滤数据逻辑处理
+                if (getAllData) {
+                    rMap.put(pathStr, pathValue.getData());
+                } else {
+                    // 先将符合and条件的数据保存;如果没有and条件，则判断or条件
+                    if (!nullAnd) {
+                        String andData = andMap.get(pathStr);
+                        if (!andMap.isEmpty() && andData != null) {
+                            boolean match = patternMatch(String.valueOf(pathValue.getData()), andData);
+                            if (match) {
+                                rMap.put(pathStr, pathValue.getData());
+                            }
+                        }
+                    }
+                    if (!nullOr) {
+                        if (!orMap.isEmpty()) {
+                            String orData = orMap.get(pathStr);
+                            if (!orMap.isEmpty() && orData != null) {
+                                boolean match = patternMatch(String.valueOf(pathValue.getData()), orData);
+                                if (match) {
+                                    rMap.put(pathStr, pathValue.getData());
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         return rMap.isEmpty() ? null : rMap;
+    }
+
+
+    public static boolean patternMatch(String data, String queryData) {
+        Pattern pattern = Pattern.compile(queryData);
+        Matcher matcher = pattern.matcher(data);
+        return matcher.find();
     }
 
     private static SignalData getPathValue(JSON jsonObjData, String[] splitPath, int j) {
