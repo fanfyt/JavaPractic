@@ -80,28 +80,34 @@ public class JsonQueryUtil {
             String[] splitPath = pathStr.split("\\.");
             SignalData pathValue = getPathValue(jsonObjData, splitPath, 0);
             if (pathValue.isResult && pathValue.getData() != null) {
+                boolean judgeAnd = (!nullAnd) && andMap.containsKey(pathStr);
+                boolean judgeOr = (!nullOr) && orMap.containsKey(pathStr);
+                boolean noFilter = !judgeAnd && !judgeOr;
                 // 过滤数据逻辑处理
-                if (getAllData) {
+                if (getAllData || noFilter) {
                     rMap.put(pathStr, pathValue.getData());
                 } else {
                     // 先将符合and条件的数据保存;如果没有and条件，则判断or条件
-                    if (!nullAnd) {
+                    if (judgeAnd) {
                         String andData = andMap.get(pathStr);
-                        if (!andMap.isEmpty() && andData != null) {
+                        if ((andData == null || andData.isEmpty())) {
+                            break;
+                        }
+                        if (!andMap.isEmpty()) {
                             boolean match = patternMatch(String.valueOf(pathValue.getData()), andData);
                             if (match) {
                                 rMap.put(pathStr, pathValue.getData());
+                            } else {
+                                break;
                             }
                         }
                     }
-                    if (!nullOr) {
-                        if (!orMap.isEmpty()) {
-                            String orData = orMap.get(pathStr);
-                            if (!orMap.isEmpty() && orData != null) {
-                                boolean match = patternMatch(String.valueOf(pathValue.getData()), orData);
-                                if (match) {
-                                    rMap.put(pathStr, pathValue.getData());
-                                }
+                    if (judgeOr) {
+                        String orData = orMap.get(pathStr);
+                        if (!orMap.isEmpty() && orData != null) {
+                            boolean match = patternMatch(String.valueOf(pathValue.getData()), orData);
+                            if (match) {
+                                rMap.put(pathStr, pathValue.getData());
                             }
                         }
                     }
@@ -117,7 +123,7 @@ public class JsonQueryUtil {
         String regexToEscape = "[.^$*+{}()\\[\\]|]";
         // 使用replaceAll方法替换这些元字符，加上反斜杠进行转义
         queryData = queryData.replaceAll(regexToEscape, "\\\\$0");
-        queryData = queryData.replaceAll("\\?", ".");
+        queryData = queryData.replaceAll("\\?", ".*");
         Pattern pattern = Pattern.compile(queryData);
         Matcher matcher = pattern.matcher(data);
         return matcher.find();
@@ -188,26 +194,26 @@ public class JsonQueryUtil {
     }
 
 
-    @Data
-    public static class QueryJsonParam {
-        private Boolean checkExist;
-        private List<String> target = new ArrayList<>();
-        private Map<String, String> or;
-        private Map<String, String> and;
-
-        public void setOr(Map<String, String> or) {
-            for (Map.Entry<String, String> entry : or.entrySet()) {
-                target.add(entry.getKey());
-            }
-            this.or = or;
-        }
-
-        public void setAnd(Map<String, String> and) {
-            for (Map.Entry<String, String> entry : and.entrySet()) {
-                target.add(entry.getKey());
-            }
-            this.and = and;
-        }
-    }
+//    @Data
+//    public static class QueryJsonParam {
+//        private Boolean checkExist;
+//        private List<String> target = new ArrayList<>();
+//        private Map<String, String> or;
+//        private Map<String, String> and;
+//
+//        public void setOr(Map<String, String> or) {
+//            for (Map.Entry<String, String> entry : or.entrySet()) {
+//                target.add(entry.getKey());
+//            }
+//            this.or = or;
+//        }
+//
+//        public void setAnd(Map<String, String> and) {
+//            for (Map.Entry<String, String> entry : and.entrySet()) {
+//                target.add(entry.getKey());
+//            }
+//            this.and = and;
+//        }
+//    }
 
 }
