@@ -148,7 +148,7 @@ public class JsonQueryUtil {
         String regexToEscape = "[.^$*+{}()\\[\\]|]";
         // 使用replaceAll方法替换这些元字符，加上反斜杠进行转义
         queryData = queryData.replaceAll(regexToEscape, "\\\\$0");
-        queryData = queryData.replaceAll("\\?", ".");
+        queryData = queryData.replaceAll("\\?", ".*");
         Pattern pattern = Pattern.compile(queryData);
         Matcher matcher = pattern.matcher(data);
         return matcher.find();
