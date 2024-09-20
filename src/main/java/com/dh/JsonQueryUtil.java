@@ -177,6 +177,9 @@ public class JsonQueryUtil {
             if (jsonArray == null || jsonArray.isEmpty()) {
                 return new SignalData(false, null);
             }
+            if (arrayIndex >= jsonArray.size()) {
+                return new SignalData(false, null);
+            }
             Object objData = jsonArray.get(arrayIndex);
             // 是最后一个节点，则保存数据
             if (end) {
