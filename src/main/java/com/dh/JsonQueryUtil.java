@@ -6,10 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,10 +26,10 @@ public class JsonQueryUtil {
             JSONArray jsonArray = (JSONArray) data;
             for (Object obj : jsonArray) {
                 Map<String, Object> query = query(obj, params.getTarget(), orMap, andMap);
-                if (query == null) {
+                if (query == null || query.isEmpty()) {
                     continue;
                 }
-                list.add(query(obj, params.getTarget(), orMap, orMap));
+                list.add(query);
                 if (checkExist) {
                     break;
                 }
@@ -65,56 +62,84 @@ public class JsonQueryUtil {
      * @param andMap        获取仅满足此条件的数据
      * @return Object
      */
-    public static Map<String, Object> query(@NonNull Object obj, @NonNull List<String> queryPathList, Map<String, String> orMap, Map<String, String> andMap) {
+    public static Map<String, Object> query(@NonNull Object obj, @NonNull Set<String> queryPathList, Map<String, String> orMap, Map<String, String> andMap) {
         if (!(obj instanceof com.alibaba.fastjson.JSON)) {
             throw new RuntimeException("数据格式存在问题，无法转换为JSON格式");
         }
         boolean nullOr = orMap == null;
         boolean nullAnd = andMap == null;
-        boolean getAllData = (nullOr || orMap.isEmpty()) && (nullAnd || andMap.isEmpty());
+        boolean noFilterOr = nullOr || orMap.isEmpty();
+        boolean noFilterAnd = nullAnd || andMap.isEmpty();
+
+        // 是否未设置任何过滤条件
+        boolean getAllData = noFilterAnd && noFilterOr;
         com.alibaba.fastjson.JSON jsonObjData = (com.alibaba.fastjson.JSON) obj;
         Map<String, Object> rMap = new HashMap<>();
+        Map<String, Object> tmpMap = new HashMap<>();
+        boolean matchStrict;
+        boolean noMatchOr = true;
         // 遍历每个属性的路径
         for (String pathStr : queryPathList) {
             // 将每个路径下的数据保存到map中
             String[] splitPath = pathStr.split("\\.");
             SignalData pathValue = getPathValue(jsonObjData, splitPath, 0);
             if (pathValue.isResult && pathValue.getData() != null) {
-                boolean judgeAnd = (!nullAnd) && andMap.containsKey(pathStr);
-                boolean judgeOr = (!nullOr) && orMap.containsKey(pathStr);
-                boolean noFilter = !judgeAnd && !judgeOr;
-                // 过滤数据逻辑处理
-                if (getAllData || noFilter) {
+                boolean judgeAndExistPath = (!nullAnd) && andMap.containsKey(pathStr);
+                boolean judgeOrExistPath = (!nullOr) && orMap.containsKey(pathStr);
+                boolean noFilterCurrentPath = !judgeAndExistPath && !judgeOrExistPath;
+                // === 过滤数据逻辑处理 ===
+                if (getAllData) {
+                    // 获取所有数据
                     rMap.put(pathStr, pathValue.getData());
                 } else {
+                    if (noFilterCurrentPath) {
+                        // 未参与过滤的目标数据
+                        tmpMap.put(pathStr, pathValue.getData());
+                    }
                     // 先将符合and条件的数据保存;如果没有and条件，则判断or条件
-                    if (judgeAnd) {
+                    else if (judgeAndExistPath) {
                         String andData = andMap.get(pathStr);
                         if ((andData == null || andData.isEmpty())) {
+                            // 未获取到匹配的数据，停止此对象属性遍历，直接退出
+                            tmpMap.clear();
                             break;
                         }
                         if (!andMap.isEmpty()) {
-                            boolean match = patternMatch(String.valueOf(pathValue.getData()), andData);
-                            if (match) {
-                                rMap.put(pathStr, pathValue.getData());
+                            // 获取到了数据，判断是否匹配
+                            matchStrict = patternMatch(String.valueOf(pathValue.getData()), andData);
+                            if (matchStrict) {
+                                tmpMap.put(pathStr, pathValue.getData());
+                                noMatchOr = false;
                             } else {
+                                // 匹配失败，停止此对象属性遍历，直接退出
+                                tmpMap.clear();
                                 break;
                             }
                         }
                     }
-                    if (judgeOr) {
+
+                    // 如果已经存在精确匹配条件，则忽略or条件
+                    if (!judgeAndExistPath && judgeOrExistPath) {
                         String orData = orMap.get(pathStr);
                         if (!orMap.isEmpty() && orData != null) {
                             boolean match = patternMatch(String.valueOf(pathValue.getData()), orData);
                             if (match) {
-                                rMap.put(pathStr, pathValue.getData());
+                                noMatchOr = false;
+                                tmpMap.put(pathStr, pathValue.getData());
                             }
                         }
                     }
                 }
             }
         }
-        return rMap.isEmpty() ? null : rMap;
+
+        if (noFilterAnd && noMatchOr) {
+            rMap.clear();
+        } else {
+            rMap.putAll(tmpMap);
+            rMap = rMap.isEmpty() ? null : rMap;
+        }
+        return rMap;
     }
 
 
@@ -123,7 +148,7 @@ public class JsonQueryUtil {
         String regexToEscape = "[.^$*+{}()\\[\\]|]";
         // 使用replaceAll方法替换这些元字符，加上反斜杠进行转义
         queryData = queryData.replaceAll(regexToEscape, "\\\\$0");
-        queryData = queryData.replaceAll("\\?", ".*");
+        queryData = queryData.replaceAll("\\?", ".");
         Pattern pattern = Pattern.compile(queryData);
         Matcher matcher = pattern.matcher(data);
         return matcher.find();
@@ -194,26 +219,26 @@ public class JsonQueryUtil {
     }
 
 
-//    @Data
-//    public static class QueryJsonParam {
-//        private Boolean checkExist;
-//        private List<String> target = new ArrayList<>();
-//        private Map<String, String> or;
-//        private Map<String, String> and;
-//
-//        public void setOr(Map<String, String> or) {
-//            for (Map.Entry<String, String> entry : or.entrySet()) {
-//                target.add(entry.getKey());
-//            }
-//            this.or = or;
-//        }
-//
-//        public void setAnd(Map<String, String> and) {
-//            for (Map.Entry<String, String> entry : and.entrySet()) {
-//                target.add(entry.getKey());
-//            }
-//            this.and = and;
-//        }
-//    }
+    @Data
+    public static class QueryJsonParam {
+        private Boolean checkExist;
+        private Set<String> target = new HashSet<>();
+        private Map<String, String> or;
+        private Map<String, String> and;
+
+        public void setOr(Map<String, String> or) {
+            for (Map.Entry<String, String> entry : or.entrySet()) {
+                target.add(entry.getKey());
+            }
+            this.or = or;
+        }
+
+        public void setAnd(Map<String, String> and) {
+            for (Map.Entry<String, String> entry : and.entrySet()) {
+                target.add(entry.getKey());
+            }
+            this.and = and;
+        }
+    }
 
 }
