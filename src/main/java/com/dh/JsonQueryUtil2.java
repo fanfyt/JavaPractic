@@ -77,14 +77,12 @@ public class JsonQueryUtil2 {
         boolean getAllData = noFilterAnd && noFilterOr && noFilterNot;
         JSON jsonObjData = (JSON) obj;
         Map<String, Object> rMap = new HashMap<>();
-        Map<String, Object> tmpMap = new HashMap<>();
         boolean isMatch;
         boolean noMatchOr = true;
 
         // 获取满足and条件的数据
-        Map<String, String> andParamMap = andMapList.get(0);
-        noFilterAnd = andParamMap.isEmpty();
-
+        noFilterAnd = andMapList == null || andMapList.isEmpty() || andMapList.get(0).isEmpty();
+        Map<String, String> andParamMap = noFilterAnd ? new HashMap<>() : andMapList.get(0);
         // 获取满足not条件的数据
         Map<String, Set<String>> notMapParam = new HashMap<>();
         if (!noFilterNot) {
@@ -133,7 +131,7 @@ public class JsonQueryUtil2 {
                 boolean judgeAndExistPath = (!nullAnd) && andParamMap.containsKey(pathStr);
                 boolean judgeOrExistPath = (!nullOr) && orMapParam.containsKey(pathStr);
                 boolean judgeNotExistPath = (!nullNot) && notMapParam.containsKey(pathStr);
-                boolean noFilterCurrentPath = !judgeAndExistPath && !judgeOrExistPath && !judgeNotExistPath;
+//                boolean noFilterCurrentPath = !judgeAndExistPath && !judgeOrExistPath && !judgeNotExistPath;
                 // === 过滤数据逻辑处理 ===
                 if (getAllData) {
                     // 获取所有数据
@@ -152,20 +150,17 @@ public class JsonQueryUtil2 {
                     if (judgeAndExistPath && andData != null) {
                         if (andData.isEmpty()) {
                             // 未获取到匹配的数据，停止此对象属性遍历，直接退出
-                            tmpMap.clear();
                             break;
                         }
                         doAnd = true;
                         // 获取到了数据，判断是否匹配
                         isMatch = patternMatch(String.valueOf(pathValue.getData()), andData);
                         if (isMatch) {
-                            tmpMap.put(pathStr, pathValue.getData());
                             andMap.put(pathStr, String.valueOf(pathValue.getData()));
                             noMatchOr = false;
                             matchAndSize = matchAndSize + 1;
                         } else {
                             // 匹配失败，停止此对象属性遍历，直接退出
-                            tmpMap.clear();
                             break;
                         }
 
@@ -177,11 +172,9 @@ public class JsonQueryUtil2 {
 
                     // -------- 获取到not条件数据
                     if (judgeNotExistPath && notDataSet != null) {
-                        boolean notNotEmpty = false;
                         String sourceValue = String.valueOf(pathValue.getData());
                         // 未获取到已匹配上的数据；则对比源Json数据对应路径值
                         for (String notData : notDataSet) {
-                            notNotEmpty = true;
                             // 获取到了数据，判断是否匹配
                             isMatch = patternMatch(sourceValue, notData);
                             if (isMatch) {
@@ -200,7 +193,6 @@ public class JsonQueryUtil2 {
                                 boolean match = patternMatch(String.valueOf(pathValue.getData()), orData);
                                 if (match) {
                                     noMatchOr = false;
-                                    tmpMap.put(pathStr, pathValue.getData());
                                 }
                             }
                         }
@@ -233,8 +225,7 @@ public class JsonQueryUtil2 {
         queryData = queryData.replaceAll("\\?", ".*");
         Pattern pattern = Pattern.compile(queryData);
         Matcher matcher = pattern.matcher(data);
-        boolean b = matcher.find();
-        return b;
+        return matcher.find();
     }
 
     private static SignalData getPathValue(JSON jsonObjData, String[] splitPath, int j) {
@@ -313,6 +304,7 @@ public class JsonQueryUtil2 {
         private Set<String> target = new HashSet<>();
         private QueryJsonFilter filter = new QueryJsonFilter();
 
+        @SuppressWarnings("unused")
         public void setOr(List<Map<String, String>> or) {
             for (Map<String, String> orMap : or) {
                 for (Map.Entry<String, String> entry : orMap.entrySet()) {
@@ -349,6 +341,7 @@ public class JsonQueryUtil2 {
     }
 
     @Data
+    @SuppressWarnings("")
     public static class JsonQueryResult {
         Boolean isExist;
         List<Object> result;
