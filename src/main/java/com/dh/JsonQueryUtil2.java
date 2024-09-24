@@ -78,25 +78,13 @@ public class JsonQueryUtil2 {
         JSON jsonObjData = (JSON) obj;
         Map<String, Object> rMap = new HashMap<>();
         Map<String, Object> tmpMap = new HashMap<>();
-        boolean matchStrict;
+        boolean isMatch;
         boolean noMatchOr = true;
 
         // 获取满足and条件的数据
-        Map<String, Set<String>> andMapParam = new HashMap<>();
-        if (!noFilterAnd) {
-            for (Map<String, String> andMap : andMapList) {
-                for (Map.Entry<String, String> entry : andMap.entrySet()) {
-                    Set<String> set = andMapParam.get(entry.getKey());
-                    if (set == null) {
-                        set = new HashSet<>();
-                        set.add(entry.getValue());
-                        andMapParam.put(entry.getKey(), set);
-                    } else {
-                        set.add(entry.getValue());
-                    }
-                }
-            }
-        }
+        Map<String, String> andParamMap = andMapList.get(0);
+        noFilterAnd = andParamMap.isEmpty();
+
         // 获取满足not条件的数据
         Map<String, Set<String>> notMapParam = new HashMap<>();
         if (!noFilterNot) {
@@ -106,6 +94,7 @@ public class JsonQueryUtil2 {
                     if (set == null) {
                         set = new HashSet<>();
                         set.add(entry.getValue());
+                        notMapParam.put(entry.getKey(), set);
                     } else {
                         set.add(entry.getValue());
                     }
@@ -129,14 +118,19 @@ public class JsonQueryUtil2 {
                 }
             }
         }
+
+        Map<String, String> andMap = new HashMap<>();
+        Map<String, String> notMap = new HashMap<>();
+        Map<String, String> orMap = new HashMap<>();
+
+        int matchAndSize = 0;
         // 遍历每个属性的路径
         for (String pathStr : queryPathList) {
-
             // 将每个路径下的数据保存到map中
             String[] splitPath = pathStr.split("\\.");
             SignalData pathValue = getPathValue(jsonObjData, splitPath, 0);
             if (pathValue.isResult && pathValue.getData() != null) {
-                boolean judgeAndExistPath = (!nullAnd) && andMapParam.containsKey(pathStr);
+                boolean judgeAndExistPath = (!nullAnd) && andParamMap.containsKey(pathStr);
                 boolean judgeOrExistPath = (!nullOr) && orMapParam.containsKey(pathStr);
                 boolean judgeNotExistPath = (!nullNot) && notMapParam.containsKey(pathStr);
                 boolean noFilterCurrentPath = !judgeAndExistPath && !judgeOrExistPath && !judgeNotExistPath;
@@ -145,102 +139,60 @@ public class JsonQueryUtil2 {
                     // 获取所有数据
                     rMap.put(pathStr, pathValue.getData());
                 } else {
-                    Set<String> andDataSet = andMapParam.get(pathStr);
+                    String andData = andParamMap.get(pathStr);
                     Set<String> notDataSet = notMapParam.get(pathStr);
-                    boolean andNotNull = andDataSet != null;
-                    boolean notNotNull = notDataSet != null;
                     boolean doAnd = false;
                     boolean doNot = false;
-                    if (noFilterCurrentPath) {
-                        // 未参与过滤的目标数据, 直接保存
-                        tmpMap.put(pathStr, pathValue.getData());
-                    }
                     /*
                      先将符合and条件的数据保存,如果存在not条件,那么还要通过not与and保存下来的数据进行匹配，如果匹配上了就要去掉;
                      如果不存在and条件，则直接用not数据进行匹配，然后保存符合的结果；
                      如果没有and条件且没有not条件，才去判断or条件
                     */
-
-                    // 获取到and条件数据
-                    else if (judgeAndExistPath && andNotNull) {
-                        boolean andNotEmpty = false;
-                        for (String andData : andDataSet) {
-                            if (andData != null) {
-                                andNotEmpty = true;
-                                break;
-                            }
-                        }
-
-                        if (andDataSet.isEmpty() || !andNotEmpty) {
+                    // -------- 路径存在且条件存在,获取到and条件数据
+                    if (judgeAndExistPath && andData != null) {
+                        if (andData.isEmpty()) {
                             // 未获取到匹配的数据，停止此对象属性遍历，直接退出
                             tmpMap.clear();
                             break;
                         }
                         doAnd = true;
-                        for (String andData : andDataSet) {
-                            // 获取到了数据，判断是否匹配
-                            matchStrict = patternMatch(String.valueOf(pathValue.getData()), andData);
-                            if (matchStrict) {
-                                tmpMap.put(pathStr, pathValue.getData());
-                                noMatchOr = false;
-                            } else {
-                                // 匹配失败，停止此对象属性遍历，直接退出
-                                tmpMap.clear();
-                                break;
-                            }
-                        }
-                    }
-
-                    // 获取到not条件数据
-                    if (judgeNotExistPath && notNotNull) {
-                        boolean notNotEmpty = false;
-                        for (String notData : notDataSet) {
-                            if (notData != null) {
-                                notNotEmpty = true;
-                                break;
-                            }
-                        }
-
-                        Object existData = tmpMap.get(pathStr);
-                        String sourceValue = String.valueOf(pathValue.getData());
-                        if (existData == null) {
-                            // 未获取到已匹配上的数据；则继续遍历查询源Json数据对象
-                            for (String notData : notDataSet) {
-                                // 获取到了数据，判断是否匹配
-                                matchStrict = patternMatch(sourceValue, notData);
-                                if (matchStrict) {
-                                    tmpMap.put(pathStr, pathValue.getData());
-                                    // 匹配成功，则移除此数据
-                                    tmpMap.remove(pathStr);
-                                    noMatchOr = false;
-                                } else {
-                                    // 匹配失败，停止此对象属性遍历，直接退出
-                                    tmpMap.put(pathStr, sourceValue);
-                                    break;
-                                }
-                            }
+                        // 获取到了数据，判断是否匹配
+                        isMatch = patternMatch(String.valueOf(pathValue.getData()), andData);
+                        if (isMatch) {
+                            tmpMap.put(pathStr, pathValue.getData());
+                            andMap.put(pathStr, String.valueOf(pathValue.getData()));
+                            noMatchOr = false;
+                            matchAndSize = matchAndSize + 1;
                         } else {
-                            // 获取到了and条件已匹配上的数据，则针对已匹配数据与not条件数据进行匹配
-                            // 获取到了数据，判断是否匹配
-                            matchStrict = patternMatch(sourceValue, String.valueOf(existData));
-                            if (matchStrict) {
-                                tmpMap.put(pathStr, pathValue.getData());
-                                tmpMap.remove(pathStr);
-                                noMatchOr = false;
-                            } else {
-                                // 未和and匹配上，停止此对象属性遍历，直接退出
-                                break;
-                            }
-                        }
-
-                        if (notDataSet.isEmpty() || !notNotEmpty) {
-                            // 未获取到匹配的数据，停止此对象属性遍历，直接退出
+                            // 匹配失败，停止此对象属性遍历，直接退出
                             tmpMap.clear();
                             break;
                         }
+
                     }
 
-                    // 如果已经存在精确匹配条件，则忽略or条件
+                    if (andData == null || andData.isEmpty()) {
+                        andMap.put(pathStr, String.valueOf(pathValue.getData()));
+                    }
+
+                    // -------- 获取到not条件数据
+                    if (judgeNotExistPath && notDataSet != null) {
+                        boolean notNotEmpty = false;
+                        String sourceValue = String.valueOf(pathValue.getData());
+                        // 未获取到已匹配上的数据；则对比源Json数据对应路径值
+                        for (String notData : notDataSet) {
+                            notNotEmpty = true;
+                            // 获取到了数据，判断是否匹配
+                            isMatch = patternMatch(sourceValue, notData);
+                            if (isMatch) {
+                                // 匹配成功，记录此待移除属性与数据
+                                rMap.clear();
+                                return rMap;
+                            }
+                        }
+                    }
+
+                    // -------- 如果已经存在精确匹配条件，则忽略or条件
                     if (!doAnd && !doNot && judgeOrExistPath) {
                         Set<String> orDataSet = orMapParam.get(pathStr);
                         if (!orMapList.isEmpty() && orDataSet != null && !orDataSet.isEmpty()) {
@@ -253,14 +205,21 @@ public class JsonQueryUtil2 {
                             }
                         }
                     }
+
                 }
             }
+        }
+
+        // 如果and条件没有全部匹配上，则清空and数据
+        if (!noFilterAnd && (matchAndSize != andParamMap.size())) {
+            andMap.clear();
         }
 
         if (noFilterAnd && noMatchOr) {
             rMap.clear();
         } else {
-            rMap.putAll(tmpMap);
+            rMap.putAll(andMap);
+            rMap.putAll(notMap);
             rMap = rMap.isEmpty() ? null : rMap;
         }
         return rMap;
@@ -274,7 +233,8 @@ public class JsonQueryUtil2 {
         queryData = queryData.replaceAll("\\?", ".*");
         Pattern pattern = Pattern.compile(queryData);
         Matcher matcher = pattern.matcher(data);
-        return matcher.find();
+        boolean b = matcher.find();
+        return b;
     }
 
     private static SignalData getPathValue(JSON jsonObjData, String[] splitPath, int j) {
@@ -335,6 +295,7 @@ public class JsonQueryUtil2 {
     public static class SignalData {
         private boolean isResult;
         private Object data;
+
         public SignalData(boolean b, Object o) {
             this.isResult = b;
             this.data = o;
@@ -350,7 +311,7 @@ public class JsonQueryUtil2 {
         private String table;
         @Getter
         private Set<String> target = new HashSet<>();
-        private QueryJsonFilter filter;
+        private QueryJsonFilter filter = new QueryJsonFilter();
 
         public void setOr(List<Map<String, String>> or) {
             for (Map<String, String> orMap : or) {
@@ -376,7 +337,7 @@ public class JsonQueryUtil2 {
                     target.add(entry.getKey());
                 }
             }
-            this.filter.and = not;
+            this.filter.not = not;
         }
     }
 
